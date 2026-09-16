@@ -1,0 +1,35 @@
+# Environments
+.env
+.venv
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+
+# uv
+.uv/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Database
+*.sqlite3
+*.db
+
+# Docker
+docker-compose.override.yaml
