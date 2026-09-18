@@ -40,6 +40,11 @@ class UserProfileUpdateReq(RequestSchema, UserProfileFieldsMixin):
 
   pass
 
+class UserUpdatePasswordReq(RequestSchema):
+  """修改密码请求"""
+  old_password: str = Field(..., description="旧密码")
+  new_password: str = Field(..., description="新密码")
+
 
 # --- 响应结构 (Response) ---
 class UserInfoResponse(

@@ -1,10 +1,10 @@
-from http.client import HTTPException
-
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
-from app.crud.user import get_user_by_username, create_user, generate_token
-from app.schemas.user import UserLoginReq, UserAuthResponse, UserInfoResponse
+from app.crud.user import get_user_by_username, create_user, generate_token, verify_user, update_user_profile
+from app.models.user import User
+from app.schemas.user import UserLoginReq, UserAuthResponse, UserInfoResponse, UserProfileUpdateReq
+from app.utils.auth import get_current_user
 from app.utils.response import success_response
 
 # 新闻模块路由
@@ -50,3 +50,43 @@ async def register(user_data: UserLoginReq, db: AsyncSession = Depends(get_db)):
         )
     )
 
+# 用户登录
+@router.post("/login")
+async def login(user_data: UserLoginReq, db: AsyncSession = Depends(get_db)):
+    # 登录逻辑: 验证用户和密码是否正确 -> 生成 Token -> 响应结果
+    user = await verify_user(db, user_data)
+    if not user:
+        return {
+            "code": 401,
+            "message": "用户不存在或密码错误"
+        }
+    token = await generate_token(db, user.id)
+    return success_response(
+        message="登录成功",
+        data=UserAuthResponse(
+            token=token,
+            user_info=UserInfoResponse.model_validate(user)
+        )
+    )
+
+# 获取用户信息
+@router.get("/info")
+async def get_user_info(user: User = Depends(get_current_user)):
+    return success_response(
+        message="获取用户信息成功",
+        data=UserInfoResponse.model_validate(user)
+    )
+
+# 修改用户信息
+@router.put("/update")
+async def update_user_info(
+    user_data: UserProfileUpdateReq,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    # 修改用户信息逻辑: 验证用户 -> 修改用户信息 -> 响应结果
+    update_user = await update_user_profile(db, user.username, user_data)
+    return success_response(
+        message="修改用户信息成功",
+        data=UserInfoResponse.model_validate(update_user)
+    )
