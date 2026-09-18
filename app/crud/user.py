@@ -6,7 +6,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User, UserToken
-from app.schemas.user import UserLoginReq, UserProfileUpdateReq
+from app.schemas.user import UserLoginReq, UserProfileUpdateReq, UserUpdatePasswordReq
 from app.utils.security import get_hash_password, verify_password
 
 
@@ -84,3 +84,13 @@ async def update_user_profile(db: AsyncSession, username: str, user_data: UserPr
     # 获取一下更新后的用户
     updated_user = await get_user_by_username(db, username)
     return updated_user
+
+async def update_user_password(db: AsyncSession, username: str, data: UserUpdatePasswordReq):
+    query = (
+        update(User)
+             .where(User.username == username)
+             .values(password=get_hash_password(data.new_password))
+    )
+    result = await db.execute(query)
+    await db.commit()
+    return result.rowcount > 0

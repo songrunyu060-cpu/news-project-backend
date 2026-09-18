@@ -1,5 +1,7 @@
 from typing import Optional
-from pydantic import Field
+from pydantic import Field, ConfigDict
+from pydantic.alias_generators import to_camel
+
 from app.schemas.base import RequestSchema, ResponseSchema
 
 
@@ -44,6 +46,10 @@ class UserUpdatePasswordReq(RequestSchema):
   """修改密码请求"""
   old_password: str = Field(..., description="旧密码")
   new_password: str = Field(..., description="新密码")
+
+  model_config = ConfigDict(
+    alias_generator=to_camel,
+  )
 
 
 # --- 响应结构 (Response) ---
